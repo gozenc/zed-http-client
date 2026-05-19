@@ -1,7 +1,7 @@
 {
   "name": "tree-sitter-http",
   "version": "2.0.0",
-  "description": "Treesitter parser for http files",
+  "description": "Tree-sitter grammar for HTTP request files used by HTTP Client for Zed",
   "main": "bindings/node",
   "types": "bindings/node",
   "scripts": {
@@ -14,12 +14,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rest-nvim/tree-sitter-http.git"
+    "url": "git+https://github.com/gozenc/zed-http-client.git",
+    "directory": "vendor/http-grammar"
   },
   "keywords": [
-    "treesitter",
+    "tree-sitter",
     "parser",
-    "http"
+    "http",
+    "rest",
+    "zed"
   ],
   "files": [
     "grammar.js",
@@ -32,9 +35,9 @@
   "author": "NTBBloodbath",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rest-nvim/tree-sitter-http/issues"
+    "url": "https://github.com/gozenc/zed-http-client/issues"
   },
-  "homepage": "https://github.com/rest-nvim/tree-sitter-http#readme",
+  "homepage": "https://github.com/gozenc/zed-http-client/tree/main/vendor/http-grammar#readme",
   "dependencies": {
     "node-addon-api": "^7.1.0",
     "node-gyp-build": "^4.8.0"

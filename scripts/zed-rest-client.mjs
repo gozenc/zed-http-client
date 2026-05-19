@@ -109,7 +109,7 @@ function parseArgs(args) {
 }
 
 function printHelp() {
-  console.log(`zed-rest-client
+  console.log(`http-client
 
 Usage:
   zed-rest-client.mjs send --file request.http --line 10 [--cwd /repo]
@@ -121,7 +121,7 @@ response to stdout for Zed's task terminal.`);
 }
 
 function throwUserError(message) {
-  console.error(`zed-rest-client: ${message}`);
+  console.error(`http-client: ${message}`);
   process.exit(1);
 }
 

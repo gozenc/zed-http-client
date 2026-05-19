@@ -1,166 +1,175 @@
-# Zed REST Client
+# HTTP Client
 
-Local Zed extension for `.http` and `.rest` files. It adds HTTP syntax support,
-inline runnable actions for request blocks, and a curl-backed runner that prints
-the response in Zed's task terminal.
+HTTP request runner for Zed with support for `.http` and `.rest` files.
 
-This extension intentionally keeps the Rust side minimal. Zed loads the language
-extension; request execution is handled by `scripts/zed-rest-client.mjs` and
-`curl`.
+It provides:
 
-## Install as a dev extension
+- syntax highlighting for HTTP request files
+- runnable request blocks inside the editor
+- curl-backed execution in Zed's task terminal
+- pretty-printed JSON responses
+- simple variables, dotenv lookup, cookies, and request history
 
-1. Open Zed.
-2. Run `zed: extensions` from the command palette.
-3. Click `Install Dev Extension`.
-4. Select this directory: `~/repos/zed-rest-client`.
-5. Open a `.http` or `.rest` file.
+The extension keeps the Rust side minimal. Request parsing and execution live in
+[`scripts/zed-rest-client.mjs`](scripts/zed-rest-client.mjs).
 
-This extension uses `id = "http"` so it replaces the installed highlight-only
-HTTP extension while you are using it as a dev extension.
+## Install
 
-## Use
+### Marketplace
 
-Open a request block in a `.http` file:
+Install `HTTP Client` from the Zed extensions panel once it is published.
+
+### Dev Extension
+
+1. Clone this repository to `~/repos/zed-http-client`.
+2. Open Zed.
+3. Run `zed: extensions`.
+4. Click `Install Dev Extension`.
+5. Select `~/repos/zed-http-client`.
+
+## Example Request File
+
+[`examples/sample.http`](examples/sample.http) contains a generic multi-request example:
 
 ```http
-@base=http://127.0.0.1:7790
+@my_app_one_base = https://api.my-app-one.example
+@my_app_two_base = https://api.my-app-two.example
+@api_token = demo-token
 
-### BILD
-POST {{base}}/api/cms/export
+### Create a draft record
+POST {{my_app_one_base}}/v1/articles
+Content-Type: application/json
+Authorization: Bearer {{api_token}}
+
+{
+  "title": "Quarterly roadmap",
+  "status": "draft",
+  "summary": "Initial planning document for the next launch window.",
+  "tags": ["planning", "launch", "internal"]
+}
+
+### Sync the record to another service
+POST {{my_app_two_base}}/v1/imports
 Content-Type: application/json
 
 {
-  "tenant": "bild",
-  "article_id": "manual-test-bild",
-  "title": "Manual test headline",
-  "body": "Manual test body",
-  "category": "politics and government",
-  "source_name": "newsapi",
-  "url": "https://example.com/source",
-  "article_summary": "Manual summary"
+  "sourceId": "article-123",
+  "sourceName": "my_app_one",
+  "targetName": "my_app_two",
+  "published": false
 }
 ```
 
-Run the request with either:
+Run a request with:
 
-- The runnable button that appears next to the request URL.
-- `task: Spawn`, then `REST Client: Send Request`.
-- `task: Rerun` to rerun the previous request.
+- the runnable button next to the request URL
+- `task: Spawn`, then `HTTP Client: Send Request`
+- `task: Rerun` to rerun the previous request
 
-The output is written to Zed's task terminal pane. Zed provides cancellation by
-stopping the running task.
+The response is printed to Zed's task terminal. JSON responses are formatted
+with indentation for readability.
 
-## Supported request syntax
+## Supported Syntax
 
-- Multiple requests separated by `###`.
-- Method request lines, for example `POST https://example.com HTTP/1.1`.
-- URL-only request lines, treated as `GET`.
-- Request headers in `Name: value` form.
-- Request bodies after a blank line.
-- Query continuation lines starting with `?` or `&`.
-- File variables with `@name = value`.
-- Variables in URL, headers, and body with `{{name}}`.
-- Dotenv variables with `{{env.NAME}}`. The nearest `.env` is found by walking
-  upward from the request file directory.
-- System variables:
-  - `{{$guid}}`
-  - `{{$randomInt min max}}`
-  - `{{$timestamp [offset option]}}`
-  - `{{$datetime rfc1123|iso8601 [offset option]}}`
-  - `{{$localDatetime rfc1123|iso8601 [offset option]}}`
-  - `{{$processEnv [%]envVarName}}`
-  - `{{$dotenv [%]variableName}}`
-- External body references like `< ./body.json` and `<@ ./body.json`.
-- GraphQL bodies when `X-Request-Type: GraphQL` is present.
-- Simple cURL blocks beginning with `curl`.
-- Basic Auth via `Authorization: Basic user password` or cURL `-u user:pass`.
-- Cookie persistence through curl's cookie jar at `~/.zed-rest-client/cookies.txt`.
-- Request history at `~/.zed-rest-client/history.jsonl`.
-- Copy request as cURL via `REST Client: Copy Request as cURL`.
+- multiple requests separated by `###`
+- method request lines like `POST https://example.com HTTP/1.1`
+- URL-only request lines, treated as `GET`
+- request headers in `Name: value` form
+- request bodies after a blank line
+- query continuation lines starting with `?` or `&`
+- file variables with `@name = value`
+- variables in URL, headers, and body with `{{name}}`
+- dotenv variables with `{{env.NAME}}`
+- external body references like `< ./body.json` and `<@ ./body.json`
+- GraphQL bodies when `X-Request-Type: GraphQL` is present
+- simple cURL blocks beginning with `curl`
+- basic auth via `Authorization: Basic user password` or cURL `-u user:pass`
 
-## Environment variables
+## Variables
 
-Create `.zed-rest-client.env.json` next to the `.http` file or at the worktree
-root:
+### File Variables
 
-```json
-{
-  "$shared": {
-    "version": "v1"
-  },
-  "local": {
-    "host": "127.0.0.1:7790",
-    "base": "http://{{host}}"
-  },
-  "prod": {
-    "base": "https://api.example.com"
-  }
-}
+```http
+@base_url = https://api.my-app-one.example
+@content_type = application/json
+
+GET {{base_url}}/v1/health
+Accept: {{content_type}}
 ```
 
-Select the environment with:
+Single quotes, double quotes, or no quotes are accepted on the right-hand side:
 
-```bash
-ZED_REST_ENV=local
+```http
+@quoted_double = "hello"
+@quoted_single = 'world'
+@plain = unquoted
 ```
 
-Zed tasks inherit the terminal environment.
+### Dotenv Variables
 
-You can also reference `.env` values directly:
+The runner looks for the nearest `.env` file by walking upward from the request
+file directory:
 
 ```http
 GET {{env.API_BASE_URL}}/health
 Authorization: Bearer {{env.API_TOKEN}}
 ```
 
-If the nearest `.env` does not contain a referenced key, the runner exits with:
+If a referenced key does not exist, the runner exits with:
 
 ```text
 Env variable API_TOKEN not found
 ```
 
-## Current limits
+### System Variables
 
-Zed extensions do not currently expose a VS Code-style webview response preview,
-custom bottom panel, or CodeLens API for this exact workflow. The implementation
-uses Zed language runnables and task terminal output instead.
+- `{{$guid}}`
+- `{{$randomInt min max}}`
+- `{{$timestamp [offset option]}}`
+- `{{$datetime rfc1123|iso8601 [offset option]}}`
+- `{{$localDatetime rfc1123|iso8601 [offset option]}}`
+- `{{$processEnv [%]envVarName}}`
+- `{{$dotenv [%]variableName}}`
+
+## State
+
+- cookies are stored under `~/.zed-rest-client/cookies.txt`
+- request history is stored under `~/.zed-rest-client/history.jsonl`
+
+## Limits
+
+This extension intentionally maps the workflow to Zed features that exist
+today. It does not currently provide a dedicated response pane or CodeLens-style
+controls.
 
 Not implemented in this MVP:
 
-- Digest Auth.
-- Azure AD / Microsoft Identity token acquisition.
-- AWS Signature v4 signing.
-- SSL client certificate settings.
-- Interactive prompt variables.
-- Request variables such as `{{login.response.body.$.token}}`.
-- Hover, diagnostics, go-to-definition, and find-references for variables.
-- Rich image preview in a custom pane. Binary/image responses are saved to a
-  temp file and the path is printed.
-- Save response buttons. Use the printed temp path or rerun the equivalent curl
-  command with `--output`.
-- Code snippet generation for Python, JavaScript, and other languages.
+- digest auth
+- Azure AD / Microsoft Identity token acquisition
+- AWS Signature v4 signing
+- SSL client certificate settings
+- interactive prompt variables
+- request variables such as `{{login.response.body.$.token}}`
+- hover, diagnostics, go-to-definition, and find-references for variables
+- generated code snippets for other languages
 
-These are documented as future extension work, not hidden behavior.
+## Local CLI Testing
 
-## Local CLI testing
-
-Print the cURL command for the request block containing a line:
+From the repository root:
 
 ```bash
-node ~/repos/zed-rest-client/scripts/zed-rest-client.mjs curl \
-  --file ~/repos/nmt-aigency-iv/src/cms/apps/api/src/__tests__/import.newsos.http \
-  --line 4 \
-  --cwd ~/repos/nmt-aigency-iv
+node scripts/zed-rest-client.mjs curl \
+  --file examples/sample.http \
+  --line 5 \
+  --cwd "$PWD"
 ```
-
-Send the request:
 
 ```bash
-node ~/repos/zed-rest-client/scripts/zed-rest-client.mjs send \
-  --file ~/repos/nmt-aigency-iv/src/cms/apps/api/src/__tests__/import.newsos.http \
-  --line 4 \
-  --cwd ~/repos/nmt-aigency-iv
+node scripts/zed-rest-client.mjs send \
+  --file examples/sample.http \
+  --line 5 \
+  --cwd "$PWD" \
+  --dry-run
 ```
 
-Use `--dry-run` with `send` to verify parsing without sending the request.
+Use `send` without `--dry-run` to execute the request.

@@ -1,0 +1,31 @@
+@my_app_one_base = https://api.my-app-one.example
+@my_app_two_base = https://api.my-app-two.example
+@api_token = demo-token
+
+### Create a draft record
+POST {{my_app_one_base}}/v1/articles
+Content-Type: application/json
+Authorization: Bearer {{api_token}}
+
+{
+  "title": "Quarterly roadmap",
+  "status": "draft",
+  "summary": "Initial planning document for the next launch window.",
+  "tags": ["planning", "launch", "internal"]
+}
+
+### Search records
+GET {{my_app_one_base}}/v1/articles
+?status=draft
+&query=roadmap
+
+### Sync the record to another service
+POST {{my_app_two_base}}/v1/imports
+Content-Type: application/json
+
+{
+  "sourceId": "article-123",
+  "sourceName": "my_app_one",
+  "targetName": "my_app_two",
+  "published": false
+}
