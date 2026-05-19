@@ -1,0 +1,24 @@
+id = "http"
+name = "Zed REST Client"
+version = "0.1.0"
+schema_version = 1
+description = "Run .http and .rest requests from Zed via curl-backed language tasks."
+repository = "https://github.com/local/zed-rest-client"
+authors = ["fgoezenc"]
+themes = []
+languages = ["languages/http"]
+
+[lib]
+kind = "Rust"
+version = "0.7.0"
+
+[grammars.http]
+repository = "file:///Users/fgoezenc/repos/zed-rest-client"
+rev = "HEAD"
+path = "grammars/http"
+
+[language_servers]
+
+[slash_commands]
+
+[indexed_docs_providers]
