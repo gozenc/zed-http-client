@@ -13,7 +13,7 @@ kind = "Rust"
 version = "0.7.0"
 
 [grammars.http]
-repository = "https://github.com/gozenc/zed-http-client"
+repository = "https://github.com/gozenc/zed-http-client.git"
 rev = "2a347cc0deec0b3211dd8f6ffa6ea1eebb5502b2"
 path = "vendor/http-grammar"
 
