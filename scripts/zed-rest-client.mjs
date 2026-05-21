@@ -621,7 +621,7 @@ function resolveSystemVariable(name, context) {
     return process.env[resolveIndirectEnvName(args.join(" "), context)] ?? "";
   }
   if (variable === "dotenv") {
-    return readDotenv(context, resolveIndirectEnvName(args.join(" "), context));
+    throwUserError("{{$dotenv ...}} is not supported. Use {{env.NAME}} instead.");
   }
   return `{{${name}}}`;
 }
@@ -633,10 +633,6 @@ function resolveIndirectEnvName(name, context) {
   }
   const envKey = trimmed.slice(1);
   return String(context.envVariables[envKey] ?? envKey);
-}
-
-function readDotenv(context, key) {
-  return context.dotenvVariables[key] ?? "";
 }
 
 function offsetDate(date, args) {

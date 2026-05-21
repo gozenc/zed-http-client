@@ -8,7 +8,7 @@ It provides:
 - runnable request blocks inside the editor
 - curl-backed execution in Zed's task terminal
 - pretty-printed JSON responses
-- simple variables, dotenv lookup, cookies, and request history
+- simple variables, `.env` lookup, cookies, and request history
 
 The extension keeps the Rust side minimal. Request parsing and execution live in
 [`scripts/zed-rest-client.mjs`](scripts/zed-rest-client.mjs).
@@ -134,7 +134,6 @@ Env variable API_TOKEN not found
 - `{{$datetime rfc1123|iso8601 [offset option]}}`
 - `{{$localDatetime rfc1123|iso8601 [offset option]}}`
 - `{{$processEnv [%]envVarName}}`
-- `{{$dotenv [%]variableName}}`
 
 ## State
 
