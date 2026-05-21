@@ -70,6 +70,11 @@ function main() {
     return;
   }
 
+  if (command === "copy-curl") {
+    runCopyCurl(request);
+    return;
+  }
+
   if (command === "send") {
     if (options.dryRun) {
       console.log(toCurlCommand(request));
@@ -114,6 +119,7 @@ function printHelp() {
 Usage:
   zed-rest-client.mjs send --file request.http --line 10 [--cwd /repo]
   zed-rest-client.mjs curl --file request.http --line 10 [--cwd /repo]
+  zed-rest-client.mjs copy-curl --file request.http --line 10 [--cwd /repo]
 
 The runner parses the request block containing --line. Blocks are separated by
 lines beginning with ###. It executes requests through curl and prints the
@@ -720,6 +726,27 @@ function toCurlCommand(request) {
 
 function shellQuote(value) {
   return `'${String(value).replace(/'/g, "'\\''")}'`;
+}
+
+function runCopyCurl(request) {
+  const command = toCurlCommand(request);
+  if (copyToClipboard(command)) {
+    console.log("Copied request as cURL.");
+    return;
+  }
+  console.log(command);
+  console.log("Clipboard utility not found. cURL printed above.");
+}
+
+function copyToClipboard(value) {
+  const clipCommands = [["pbcopy", []], ["wl-copy", []], ["xclip", ["-selection", "clipboard"]], ["clip", []]];
+  for (const [command, args] of clipCommands) {
+    const result = spawnSync(command, args, { input: value, encoding: "utf8" });
+    if (!result.error && result.status === 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function runCurl(request, metadata) {

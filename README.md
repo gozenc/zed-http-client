@@ -27,6 +27,11 @@ Install `HTTP Client` from the Zed extensions panel once it is published.
 4. Click `Install Dev Extension`.
 5. Select `~/repos/zed-http-client`.
 
+Published installs resolve the bundled runner from Zed's extension installation
+directory on macOS, Linux, and Windows. For dev extensions loaded from an
+arbitrary local path, set `HTTP_CLIENT_EXTENSION_DIR` to the extension root so
+the task runner can find `scripts/zed-rest-client.mjs`.
+
 ## Example Request File
 
 [`examples/sample.http`](examples/sample.http) contains a generic multi-request example:
@@ -135,6 +140,14 @@ Env variable API_TOKEN not found
 
 - cookies are stored under `~/.zed-rest-client/cookies.txt`
 - request history is stored under `~/.zed-rest-client/history.jsonl`
+
+## Dev Environment Override
+
+For local development, export `HTTP_CLIENT_EXTENSION_DIR` before spawning tasks:
+
+```bash
+export HTTP_CLIENT_EXTENSION_DIR="$PWD"
+```
 
 ## Limits
 

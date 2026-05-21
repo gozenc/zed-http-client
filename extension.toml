@@ -14,7 +14,7 @@ version = "0.7.0"
 
 [grammars.http]
 repository = "https://github.com/gozenc/zed-http-client"
-rev = "e36048010a01cee8ca9d79441af56757be12b106"
+rev = "2a347cc0deec0b3211dd8f6ffa6ea1eebb5502b2"
 path = "vendor/http-grammar"
 
 [language_servers]

@@ -1,7 +1,16 @@
 [
   {
     "label": "HTTP Client: Send Request",
-    "command": "node \"$HOME/repos/zed-http-client/scripts/zed-rest-client.mjs\" send --file \"$ZED_FILE\" --line \"$ZED_ROW\" --cwd \"$ZED_WORKTREE_ROOT\"",
+    "command": "node",
+    "args": [
+      "-e",
+      "const fs=require('node:fs');const os=require('node:os');const path=require('node:path');const cp=require('node:child_process');const candidates=[process.env.HTTP_CLIENT_EXTENSION_DIR,path.join(os.homedir(),'Library','Application Support','Zed','extensions','installed','http-client'),path.join(process.env.XDG_DATA_HOME||path.join(os.homedir(),'.local','share'),'zed','extensions','installed','http-client'),process.env.LOCALAPPDATA?path.join(process.env.LOCALAPPDATA,'Zed','extensions','installed','http-client'):null].filter(Boolean);const root=candidates.find(dir=>fs.existsSync(path.join(dir,'scripts','zed-rest-client.mjs')));if(!root){console.error('HTTP Client extension directory not found. Set HTTP_CLIENT_EXTENSION_DIR to the extension install path.');process.exit(1);}const script=path.join(root,'scripts','zed-rest-client.mjs');const args=[script,process.argv[1],'--file',process.argv[2],'--line',process.argv[3],'--cwd',process.argv[4]];if(process.argv[5])args.push('--selected-text',process.argv[5]);const result=cp.spawnSync(process.execPath,args,{stdio:'inherit'});process.exit(result.status??1);",
+      "send",
+      "$ZED_FILE",
+      "$ZED_ROW",
+      "$ZED_WORKTREE_ROOT",
+      "${ZED_SELECTED_TEXT:}"
+    ],
     "cwd": "$ZED_WORKTREE_ROOT",
     "tags": ["http-request"],
     "use_new_terminal": false,
@@ -14,7 +23,16 @@
   },
   {
     "label": "HTTP Client: Copy Request as cURL",
-    "command": "node \"$HOME/repos/zed-http-client/scripts/zed-rest-client.mjs\" curl --file \"$ZED_FILE\" --line \"$ZED_ROW\" --cwd \"$ZED_WORKTREE_ROOT\" | pbcopy && echo 'Copied request as cURL.'",
+    "command": "node",
+    "args": [
+      "-e",
+      "const fs=require('node:fs');const os=require('node:os');const path=require('node:path');const cp=require('node:child_process');const candidates=[process.env.HTTP_CLIENT_EXTENSION_DIR,path.join(os.homedir(),'Library','Application Support','Zed','extensions','installed','http-client'),path.join(process.env.XDG_DATA_HOME||path.join(os.homedir(),'.local','share'),'zed','extensions','installed','http-client'),process.env.LOCALAPPDATA?path.join(process.env.LOCALAPPDATA,'Zed','extensions','installed','http-client'):null].filter(Boolean);const root=candidates.find(dir=>fs.existsSync(path.join(dir,'scripts','zed-rest-client.mjs')));if(!root){console.error('HTTP Client extension directory not found. Set HTTP_CLIENT_EXTENSION_DIR to the extension install path.');process.exit(1);}const script=path.join(root,'scripts','zed-rest-client.mjs');const args=[script,process.argv[1],'--file',process.argv[2],'--line',process.argv[3],'--cwd',process.argv[4]];if(process.argv[5])args.push('--selected-text',process.argv[5]);const result=cp.spawnSync(process.execPath,args,{stdio:'inherit'});process.exit(result.status??1);",
+      "copy-curl",
+      "$ZED_FILE",
+      "$ZED_ROW",
+      "$ZED_WORKTREE_ROOT",
+      "${ZED_SELECTED_TEXT:}"
+    ],
     "cwd": "$ZED_WORKTREE_ROOT",
     "tags": ["http-request"],
     "use_new_terminal": false,
@@ -22,7 +40,7 @@
     "reveal": "always",
     "hide": "never",
     "save": "current",
-    "show_command": true,
-    "show_summary": true
+    "show_command": false,
+    "show_summary": false
   }
 ]
