@@ -842,12 +842,23 @@ function runCurl(request, metadata) {
     durationMs,
   });
 
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1);
+  const exitCode = getRunExitCode(result.status ?? 1, statusCode);
+  if (exitCode !== 0) {
+    process.exit(exitCode);
+  }
+}
+
+function getRunExitCode(curlExitCode, statusCode) {
+  if (curlExitCode !== 0) {
+    return curlExitCode;
+  }
+  if (statusCode === 0) {
+    return 1;
   }
   if (statusCode >= 400) {
-    process.exit(1);
+    return 1;
   }
+  return 0;
 }
 
 function printRequest(request, metadata) {
@@ -901,4 +912,4 @@ function appendHistory(entry) {
   fs.writeFileSync(historyPath, `${existing.slice(-50).join("\n")}\n`);
 }
 
-export { parseDotenv, parseDotenvValue };
+export { getRunExitCode, parseDotenv, parseDotenvValue };
