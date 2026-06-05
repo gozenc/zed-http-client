@@ -9,7 +9,7 @@
       "$ZED_FILE",
       "$ZED_ROW",
       "$ZED_WORKTREE_ROOT",
-      "${ZED_SELECTED_TEXT:}"
+      "$ZED_SELECTED_TEXT"
     ],
     "cwd": "$ZED_WORKTREE_ROOT",
     "tags": ["http-request"],
@@ -31,7 +31,7 @@
       "$ZED_FILE",
       "$ZED_ROW",
       "$ZED_WORKTREE_ROOT",
-      "${ZED_SELECTED_TEXT:}"
+      "$ZED_SELECTED_TEXT"
     ],
     "cwd": "$ZED_WORKTREE_ROOT",
     "tags": ["http-request"],

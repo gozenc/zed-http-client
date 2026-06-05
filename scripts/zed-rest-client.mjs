@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const METHODS = new Set([
   "CONNECT",
@@ -36,7 +37,17 @@ const stateDir = path.join(os.homedir(), ".zed-rest-client");
 const cookieJar = path.join(stateDir, "cookies.txt");
 const historyPath = path.join(stateDir, "history.jsonl");
 
-main();
+if (isExecutedDirectly()) {
+  main();
+}
+
+function isExecutedDirectly() {
+  const entry = process.argv[1];
+  if (!entry) {
+    return false;
+  }
+  return import.meta.url === pathToFileURL(path.resolve(entry)).href;
+}
 
 function main() {
   const { command, options } = parseArgs(process.argv.slice(2));
@@ -234,10 +245,36 @@ function parseDotenv(content) {
     }
     const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
     if (match) {
-      variables[match[1]] = unquoteConfigValue(match[2].trim());
+      variables[match[1]] = parseDotenvValue(match[2].trim());
     }
   }
   return variables;
+}
+
+function parseDotenvValue(value) {
+  if (value.startsWith("\"") || value.startsWith("'")) {
+    const quote = value[0];
+    let parsed = "";
+    let escaping = false;
+    for (let index = 1; index < value.length; index += 1) {
+      const char = value[index];
+      if (escaping) {
+        parsed += char;
+        escaping = false;
+        continue;
+      }
+      if (char === "\\") {
+        escaping = true;
+        continue;
+      }
+      if (char === quote) {
+        return parsed;
+      }
+      parsed += char;
+    }
+    return parsed;
+  }
+  return value.replace(/\s+#.*$/, "").trim();
 }
 
 function unquoteConfigValue(value) {
@@ -863,3 +900,5 @@ function appendHistory(entry) {
   existing.push(JSON.stringify(entry));
   fs.writeFileSync(historyPath, `${existing.slice(-50).join("\n")}\n`);
 }
+
+export { parseDotenv, parseDotenvValue };
