@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue } from "./zed-rest-client.mjs";
+import { formatDuration, getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue } from "./zed-rest-client.mjs";
 
 test("parseDotenvValue handles double quoted values", () => {
   assert.equal(parseDotenvValue("\"https://api.example.com\" # comment"), "https://api.example.com");
@@ -41,6 +41,18 @@ test("getRunExitCode fails for HTTP errors", () => {
 
 test("getRunExitCode succeeds for HTTP success", () => {
   assert.equal(getRunExitCode(0, 200), 0);
+});
+
+test("formatDuration uses curl timing when available", () => {
+  assert.equal(formatDuration("3.512345", 9000), "3.5s");
+});
+
+test("formatDuration falls back to wall time", () => {
+  assert.equal(formatDuration("", 1234), "1.2s");
+});
+
+test("formatDuration avoids zero-second summaries", () => {
+  assert.equal(formatDuration("0.000467", 69), "<0.1s");
 });
 
 test("isExecutedDirectly handles symlinked script paths", () => {

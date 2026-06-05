@@ -13,8 +13,8 @@
     "reveal": "always",
     "hide": "never",
     "save": "current",
-    "show_command": true,
-    "show_summary": true
+    "show_command": false,
+    "show_summary": false
   },
   {
     "label": "HTTP Client: Copy Request as cURL",

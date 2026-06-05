@@ -831,6 +831,7 @@ function runCurl(request, metadata) {
   }
 
   const statusCode = Number(status || 0);
+  const summaryDuration = formatDuration(curlTime, durationMs);
   appendHistory({
     at: new Date().toISOString(),
     file: metadata.filePath,
@@ -843,8 +844,21 @@ function runCurl(request, metadata) {
 
   const exitCode = getRunExitCode(result.status ?? 1, statusCode);
   if (exitCode !== 0) {
+    console.log("");
+    console.log(`Task HTTP Client: Send Request failed (${summaryDuration})`);
     process.exit(exitCode);
   }
+  console.log("");
+  console.log(`Task HTTP Client: Send Request finished successfully (${summaryDuration})`);
+}
+
+function formatDuration(curlTime, durationMs) {
+  const curlSeconds = Number(curlTime);
+  const milliseconds = Number.isFinite(curlSeconds) && curlSeconds > 0 ? curlSeconds * 1000 : durationMs;
+  if (milliseconds > 0 && milliseconds < 100) {
+    return "<0.1s";
+  }
+  return `${(milliseconds / 1000).toFixed(1)}s`;
 }
 
 function getRunExitCode(curlExitCode, statusCode) {
@@ -911,4 +925,4 @@ function appendHistory(entry) {
   fs.writeFileSync(historyPath, `${existing.slice(-50).join("\n")}\n`);
 }
 
-export { getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue };
+export { formatDuration, getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue };
