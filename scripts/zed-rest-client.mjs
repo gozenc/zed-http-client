@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const METHODS = new Set([
   "CONNECT",
@@ -41,12 +41,11 @@ if (isExecutedDirectly()) {
   main();
 }
 
-function isExecutedDirectly() {
-  const entry = process.argv[1];
+function isExecutedDirectly(entry = process.argv[1], moduleUrl = import.meta.url) {
   if (!entry) {
     return false;
   }
-  return import.meta.url === pathToFileURL(path.resolve(entry)).href;
+  return fs.realpathSync(path.resolve(entry)) === fs.realpathSync(fileURLToPath(moduleUrl));
 }
 
 function main() {
@@ -912,4 +911,4 @@ function appendHistory(entry) {
   fs.writeFileSync(historyPath, `${existing.slice(-50).join("\n")}\n`);
 }
 
-export { getRunExitCode, parseDotenv, parseDotenvValue };
+export { getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue };

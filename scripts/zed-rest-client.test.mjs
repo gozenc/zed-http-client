@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
-import { getRunExitCode, parseDotenv, parseDotenvValue } from "./zed-rest-client.mjs";
+import { getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue } from "./zed-rest-client.mjs";
 
 test("parseDotenvValue handles double quoted values", () => {
   assert.equal(parseDotenvValue("\"https://api.example.com\" # comment"), "https://api.example.com");
@@ -37,4 +41,14 @@ test("getRunExitCode fails for HTTP errors", () => {
 
 test("getRunExitCode succeeds for HTTP success", () => {
   assert.equal(getRunExitCode(0, 200), 0);
+});
+
+test("isExecutedDirectly handles symlinked script paths", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "zed-http-client-test-"));
+  const scriptPath = path.join(tempDir, "runner.mjs");
+  const symlinkPath = path.join(tempDir, "linked-runner.mjs");
+  fs.writeFileSync(scriptPath, "");
+  fs.symlinkSync(scriptPath, symlinkPath);
+
+  assert.equal(isExecutedDirectly(symlinkPath, pathToFileURL(scriptPath).href), true);
 });
