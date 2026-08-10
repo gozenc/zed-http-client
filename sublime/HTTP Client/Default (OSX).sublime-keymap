@@ -1,0 +1,14 @@
+[
+  {
+    "keys": ["super+alt+r"],
+    "command": "http_client_send_request"
+  },
+  {
+    "keys": ["super+alt+l"],
+    "command": "http_client_rerun_last_request"
+  },
+  {
+    "keys": ["super+alt+k"],
+    "command": "http_client_cancel_request"
+  }
+]

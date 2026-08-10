@@ -32,6 +32,19 @@ directory on macOS, Linux, and Windows. For dev extensions loaded from an
 arbitrary local path, set `HTTP_CLIENT_EXTENSION_DIR` to the extension root so
 the task runner can find `scripts/zed-rest-client.mjs`.
 
+### Sublime Text
+
+The same runner is available as a local Sublime Text package. From the
+repository root:
+
+```sh
+ln -s "$PWD/sublime/HTTP Client" "$HOME/Library/Application Support/Sublime Text/Packages/HTTP Client"
+```
+
+Restart Sublime Text, then use `HTTP Client: Send Request` in the Command
+Palette, the editor context menu, or `Cmd+Alt+R`. Responses appear in Sublime's
+output panel. See [`sublime/README.md`](sublime/README.md) for all commands.
+
 ## Example Request File
 
 [`examples/sample.http`](examples/sample.http) contains a generic multi-request example:

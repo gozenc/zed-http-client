@@ -1,0 +1,37 @@
+%YAML 1.2
+---
+name: HTTP Client
+file_extensions: [http, rest]
+scope: source.http-client
+
+contexts:
+  main:
+    - match: '^\\s*###.*$'
+      scope: punctuation.definition.heading.http-client
+    - match: '^\\s*(@)([^\\s=]+)(\\s*=\\s*)(.*)$'
+      captures:
+        1: keyword.other.http-client
+        2: variable.parameter.http-client
+        4: string.unquoted.http-client
+    - match: '^\\s*(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT|TRACE|GRAPHQL)\\b'
+      captures:
+        1: keyword.control.http-client
+    - match: '^\\s*curl\\b'
+      scope: keyword.control.http-client
+    - match: '(\\{\\{)(.*?)(\\}\\})'
+      captures:
+        1: punctuation.definition.variable.begin.http-client
+        2: variable.parameter.http-client
+        3: punctuation.definition.variable.end.http-client
+    - match: '^\\s*([A-Za-z-]+)(:)\\s*(.*)$'
+      captures:
+        1: entity.name.tag.http-client
+        2: punctuation.separator.key-value.http-client
+        3: string.unquoted.http-client
+    - match: '^\\s*[\\{\\[]'
+      push: Packages/JSON/JSON.sublime-syntax
+      with_prototype:
+        - match: '^\\s*[\\}\\]]\\s*$'
+          pop: true
+    - match: '^\\s*(#|//).*$'
+      scope: comment.line.http-client

@@ -1,0 +1,23 @@
+[
+  {
+    "caption": "HTTP Client",
+    "children": [
+      {
+        "caption": "Send Request",
+        "command": "http_client_send_request"
+      },
+      {
+        "caption": "Copy Request as cURL",
+        "command": "http_client_copy_request_as_curl"
+      },
+      {
+        "caption": "Rerun Last Request",
+        "command": "http_client_rerun_last_request"
+      },
+      {
+        "caption": "Cancel Request",
+        "command": "http_client_cancel_request"
+      }
+    ]
+  }
+]
