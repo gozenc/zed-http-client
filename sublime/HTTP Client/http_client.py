@@ -52,14 +52,14 @@ class HttpClientReplaceOutputCommand(sublime_plugin.TextCommand):
         self.view.set_read_only(True)
 
 
-class HttpClientSendRequestAtLineCommand(sublime_plugin.TextCommand):
-    def run(self, edit, line):
-        run_request_from_view(self.view, "send", line)
+class HttpClientSendRequestAtLineCommand(sublime_plugin.WindowCommand):
+    def run(self, line):
+        run_request_from_view(self.window.active_view(), "send", line)
 
 
-class HttpClientCopyRequestAsCurlAtLineCommand(sublime_plugin.TextCommand):
-    def run(self, edit, line):
-        run_request_from_view(self.view, "copy-curl", line)
+class HttpClientCopyRequestAsCurlAtLineCommand(sublime_plugin.WindowCommand):
+    def run(self, line):
+        run_request_from_view(self.window.active_view(), "copy-curl", line)
 
 
 class HttpClientRequestActions(sublime_plugin.EventListener):
@@ -121,7 +121,7 @@ def update_request_actions(view):
 def navigate_request_action(view, href):
     operation, line = href.rsplit(":", 1)
     command = "http_client_send_request_at_line" if operation == "send" else "http_client_copy_request_as_curl_at_line"
-    view.run_command(command, {"line": int(line)})
+    view.window().run_command(command, {"line": int(line)})
 
 
 def run_request_from_view(view, operation, line):
