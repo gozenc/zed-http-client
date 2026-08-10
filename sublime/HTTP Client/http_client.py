@@ -1,4 +1,5 @@
 import os
+import re
 import signal
 import subprocess
 import threading
@@ -11,6 +12,8 @@ OUTPUT_PANEL = "http_client"
 SETTINGS_FILE = "HTTP Client.sublime-settings"
 ACTIVE_PROCESSES = {}
 LAST_REQUESTS = {}
+PHANTOM_SETS = {}
+REQUEST_LINE = re.compile(r"^\s*(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT|TRACE|GRAPHQL)\b|^\s*curl\b", re.I)
 
 
 class HttpClientSendRequestCommand(sublime_plugin.WindowCommand):
@@ -49,6 +52,20 @@ class HttpClientReplaceOutputCommand(sublime_plugin.TextCommand):
         self.view.set_read_only(True)
 
 
+class HttpClientRequestActions(sublime_plugin.EventListener):
+    def on_load_async(self, view):
+        schedule_request_actions(view)
+
+    def on_activated_async(self, view):
+        schedule_request_actions(view)
+
+    def on_modified_async(self, view):
+        schedule_request_actions(view)
+
+    def on_close(self, view):
+        PHANTOM_SETS.pop(view.id(), None)
+
+
 def run_active_request(window, operation):
     view = window.active_view()
     file_path = view.file_name() if view else None
@@ -59,6 +76,37 @@ def run_active_request(window, operation):
     view.run_command("save")
     line = view.rowcol(view.sel()[0].begin())[0] + 1
     run_request(window, operation, file_path, line, project_root(window, file_path))
+
+
+def schedule_request_actions(view):
+    if view.file_name() and os.path.splitext(view.file_name())[1].lower() in (".http", ".rest"):
+        sublime.set_timeout(lambda: update_request_actions(view), 100)
+
+
+def update_request_actions(view):
+    if not view.is_valid():
+        return
+
+    phantom_set = PHANTOM_SETS.setdefault(view.id(), sublime.PhantomSet(view, "http_client_actions"))
+    phantoms = []
+    for row in range(view.rowcol(view.size())[0] + 1):
+        region = view.line(view.text_point(row, 0))
+        if not REQUEST_LINE.match(view.substr(region)):
+            continue
+        line = row + 1
+        phantoms.append(sublime.Phantom(
+            sublime.Region(region.end()),
+            '<body id="http-client-actions"><a href="send:{0}">Send</a> <a href="copy-curl:{0}">Copy cURL</a></body>'.format(line),
+            sublime.LAYOUT_BELOW,
+            lambda href, current_view=view: run_request_action(current_view, href),
+        ))
+    phantom_set.update(phantoms)
+
+
+def run_request_action(view, href):
+    operation, line = href.rsplit(":", 1)
+    view.run_command("save")
+    run_request(view.window(), operation, view.file_name(), int(line), project_root(view.window(), view.file_name()))
 
 
 def run_request(window, operation, file_path, line, cwd):

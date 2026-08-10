@@ -23,6 +23,13 @@ The current request is selected from the cursor location and response text is
 shown in Sublime's output panel. macOS shortcuts are `Cmd+Alt+R` to send,
 `Cmd+Alt+L` to rerun, and `Cmd+Alt+K` to cancel.
 
+Every HTTP or cURL request line also shows `Send` and `Copy cURL` links. Both
+`.http` and `.rest` files are supported.
+
+Use `{{env.NAME}}` for values from the nearest `.env` file. The runner searches
+the request directory and its parents, and reports `Env variable NAME not found`
+when the variable is missing.
+
 `node` must be available in Sublime's environment. Set an absolute Node path
 in `Preferences: HTTP Client Settings` when Sublime is launched without your
 shell's Node path.

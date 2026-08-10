@@ -5,19 +5,19 @@ scope: source.http-client-response
 
 contexts:
   main:
-    - match: '^< HTTP \\d{3}.*$'
+    - match: '^< HTTP \d{3}.*$'
       scope: constant.numeric.http-client-response
     - match: '^HTTP/.*$'
       scope: constant.numeric.http-client-response
-    - match: '^\\s*([A-Za-z-]+)(:)\\s*(.*)$'
+    - match: '^\s*([A-Za-z-]+)(:)\s*(.*)$'
       captures:
         1: entity.name.tag.http-client-response
         2: punctuation.separator.key-value.http-client-response
         3: string.unquoted.http-client-response
-    - match: '^\\s*[\\{\\[]'
+    - match: '^\s*(?:\{|\[)'
       push: Packages/JSON/JSON.sublime-syntax
       with_prototype:
-        - match: '^\\s*[\\}\\]]\\s*$'
+        - match: '^\s*(?:\}|\])\s*$'
           pop: true
     - match: '^Task HTTP Client:.*$'
       scope: entity.name.function.http-client-response
