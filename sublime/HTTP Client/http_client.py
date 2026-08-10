@@ -107,7 +107,7 @@ def update_request_actions(view):
         line = row + 1
         phantoms.append(sublime.Phantom(
             sublime.Region(region.end()),
-            '<body id="http-client-actions"><a href=\'subl:http_client_send_request_at_line {"line": {0}}\'>Send</a> <a href=\'subl:http_client_copy_request_as_curl_at_line {"line": {0}}\'>Copy cURL</a></body>'.format(line),
+            '<body id="http-client-actions"><a href=\'subl:http_client_send_request_at_line {{"line": {0}}}\'>Send</a> <a href=\'subl:http_client_copy_request_as_curl_at_line {{"line": {0}}}\'>Copy cURL</a></body>'.format(line),
             sublime.LAYOUT_BELOW,
             None,
         ))
