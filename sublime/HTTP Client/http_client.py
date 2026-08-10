@@ -3,7 +3,6 @@ import re
 import signal
 import subprocess
 import tempfile
-import threading
 
 import sublime
 import sublime_plugin
@@ -164,13 +163,15 @@ def run_request(window, operation, file_path, line, cwd):
     ACTIVE_PROCESSES[window.id()] = process
     window.status_message("HTTP Client: Sending request.")
 
-    thread = threading.Thread(target=collect_result, args=(window, operation, process), daemon=True)
-    thread.start()
+    sublime.set_timeout(lambda: collect_result(window, operation, process), 10)
 
 
 def collect_result(window, operation, process):
+    if process.poll() is None:
+        sublime.set_timeout(lambda: collect_result(window, operation, process), 100)
+        return
     output, _ = process.communicate()
-    sublime.set_timeout(lambda: show_result(window, operation, process.returncode, output), 0)
+    show_result(window, operation, process.returncode, output)
 
 
 def show_result(window, operation, return_code, output):
