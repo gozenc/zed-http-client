@@ -12,7 +12,6 @@ OUTPUT_VIEW_NAME = "HTTP Client Response"
 SETTINGS_FILE = "HTTP Client.sublime-settings"
 ACTIVE_PROCESSES = {}
 LAST_REQUESTS = {}
-PHANTOM_SETS = {}
 RESPONSE_VIEWS = {}
 REQUEST_LINE = re.compile(r"^\s*(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT|TRACE|GRAPHQL)\b|^\s*curl\b", re.I)
 
@@ -74,7 +73,7 @@ class HttpClientRequestActions(sublime_plugin.EventListener):
         schedule_request_actions(view)
 
     def on_close(self, view):
-        PHANTOM_SETS.pop(view.id(), None)
+        view.erase_regions("http_client_actions")
 
 
 def run_active_request(window, operation):
@@ -98,20 +97,21 @@ def update_request_actions(view):
     if not view.is_valid():
         return
 
-    phantom_set = PHANTOM_SETS.setdefault(view.id(), sublime.PhantomSet(view, "http_client_actions"))
-    phantoms = []
+    regions = []
+    annotations = []
     for row in range(view.rowcol(view.size())[0] + 1):
         region = view.line(view.text_point(row, 0))
         if not REQUEST_LINE.match(view.substr(region)):
             continue
         line = row + 1
-        phantoms.append(sublime.Phantom(
-            sublime.Region(region.end()),
-            '<body id="http-client-actions"><a href="send:{0}">Send</a> <a href="copy-curl:{0}">Copy cURL</a></body>'.format(line),
-            sublime.LAYOUT_BELOW,
-            lambda href, current_view=view: navigate_request_action(current_view, href),
-        ))
-    phantom_set.update(phantoms)
+        regions.append(region)
+        annotations.append('<a href="send:{0}">Send</a> <a href="copy-curl:{0}">Copy cURL</a>'.format(line))
+    view.add_regions(
+        "http_client_actions",
+        regions,
+        annotations=annotations,
+        on_navigate=lambda href, current_view=view: navigate_request_action(current_view, href),
+    )
 
 
 def navigate_request_action(view, href):
