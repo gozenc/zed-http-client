@@ -2,17 +2,16 @@ import os
 import re
 import signal
 import subprocess
+import tempfile
 import threading
 
 import sublime
 import sublime_plugin
 
 
-OUTPUT_VIEW_NAME = "HTTP Client Response"
 SETTINGS_FILE = "HTTP Client.sublime-settings"
 ACTIVE_PROCESSES = {}
 LAST_REQUESTS = {}
-RESPONSE_VIEWS = {}
 REQUEST_LINE = re.compile(r"^\s*(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT|TRACE|GRAPHQL)\b|^\s*curl\b", re.I)
 
 
@@ -43,13 +42,6 @@ class HttpClientCancelRequestCommand(sublime_plugin.WindowCommand):
             return
         os.killpg(process.pid, signal.SIGTERM)
         self.window.status_message("HTTP Client: Cancelling request.")
-
-
-class HttpClientReplaceOutputCommand(sublime_plugin.TextCommand):
-    def run(self, edit, text):
-        self.view.set_read_only(False)
-        self.view.replace(edit, sublime.Region(0, self.view.size()), text)
-        self.view.set_read_only(True)
 
 
 class HttpClientSendRequestAtLineCommand(sublime_plugin.WindowCommand):
@@ -183,26 +175,19 @@ def collect_result(window, operation, process):
 
 def show_result(window, operation, return_code, output):
     ACTIVE_PROCESSES.pop(window.id(), None)
-    response_view(window).run_command("http_client_replace_output", {"text": output})
+    descriptor, path = tempfile.mkstemp(prefix="http-client-response-", suffix=".txt")
+    with os.fdopen(descriptor, "w") as response_file:
+        response_file.write(output)
+    response_view = window.open_file(path)
+    response_view.assign_syntax("Packages/HTTP Client/HTTP Client Response.sublime-syntax")
+    window.focus_view(response_view)
     window.status_message(
         "HTTP Client: Request finished." if return_code == 0 else "HTTP Client: Request failed."
     )
 
 
 def show_pending(window):
-    response_view(window, fresh=True).run_command("http_client_replace_output", {"text": "HTTP Client: Sending request...\n"})
-
-
-def response_view(window, fresh=False):
-    view = RESPONSE_VIEWS.get(window.id())
-    if fresh or view is None or not view.is_valid():
-        view = window.new_file()
-        view.set_name(OUTPUT_VIEW_NAME)
-        view.set_scratch(True)
-        view.assign_syntax("Packages/HTTP Client/HTTP Client Response.sublime-syntax")
-        RESPONSE_VIEWS[window.id()] = view
-    window.focus_view(view)
-    return view
+    window.status_message("HTTP Client: Sending request.")
 
 
 def project_root(window, file_path):
