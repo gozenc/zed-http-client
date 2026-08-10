@@ -129,14 +129,20 @@ def run_request(window, operation, file_path, line, cwd):
         "--cwd",
         cwd,
     ]
-    process = subprocess.Popen(
-        command,
-        cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        start_new_session=True,
-    )
+    if operation == "send":
+        show_pending(window)
+    try:
+        process = subprocess.Popen(
+            command,
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            start_new_session=True,
+        )
+    except OSError as error:
+        show_result(window, operation, 1, "http-client: {}\n".format(error))
+        return
     ACTIVE_PROCESSES[window.id()] = process
     window.status_message("HTTP Client: Sending request.")
 
@@ -162,6 +168,13 @@ def show_result(window, operation, return_code, output):
     window.status_message(
         "HTTP Client: Request finished." if return_code == 0 else "HTTP Client: Request failed."
     )
+
+
+def show_pending(window):
+    panel = window.create_output_panel(OUTPUT_PANEL)
+    panel.assign_syntax("Packages/HTTP Client/HTTP Client Response.sublime-syntax")
+    panel.run_command("http_client_replace_output", {"text": "HTTP Client: Sending request...\n"})
+    window.run_command("show_panel", {"panel": "output." + OUTPUT_PANEL})
 
 
 def project_root(window, file_path):
