@@ -105,12 +105,21 @@ def update_request_actions(view):
 
 def run_request_action(view, href):
     operation, line = href.rsplit(":", 1)
+    window = view.window()
+    file_path = view.file_name()
+    cwd = project_root(window, file_path)
     view.run_command("save")
-    run_request(view.window(), operation, view.file_name(), int(line), project_root(view.window(), view.file_name()))
+    sublime.set_timeout(
+        lambda: run_request(window, operation, file_path, int(line), cwd),
+        0,
+    )
 
 
 def run_request(window, operation, file_path, line, cwd):
-    if window.id() in ACTIVE_PROCESSES:
+    active_process = ACTIVE_PROCESSES.get(window.id())
+    if active_process and active_process.poll() is not None:
+        ACTIVE_PROCESSES.pop(window.id(), None)
+    elif active_process:
         window.status_message("HTTP Client: A request is already running.")
         return
 
