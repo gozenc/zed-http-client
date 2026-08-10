@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { formatDuration, getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue } from "./zed-rest-client.mjs";
+import { formatDuration, getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue, redactHeaderValue } from "./zed-rest-client.mjs";
 
 test("parseDotenvValue handles double quoted values", () => {
   assert.equal(parseDotenvValue("\"https://api.example.com\" # comment"), "https://api.example.com");
@@ -53,6 +53,11 @@ test("formatDuration falls back to wall time", () => {
 
 test("formatDuration avoids zero-second summaries", () => {
   assert.equal(formatDuration("0.000467", 69), "<0.1s");
+});
+
+test("redactHeaderValue hides credentials from response tabs", () => {
+  assert.equal(redactHeaderValue("x-api-key", "secret-value"), "<redacted>");
+  assert.equal(redactHeaderValue("content-type", "application/json"), "application/json");
 });
 
 test("isExecutedDirectly handles symlinked script paths", () => {

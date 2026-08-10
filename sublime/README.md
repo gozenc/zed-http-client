@@ -20,7 +20,7 @@ Restart Sublime Text, then use one of these commands from the Command Palette:
 - `HTTP Client: Cancel Request`
 
 The current request is selected from the cursor location and response text is
-shown in Sublime's output panel. macOS shortcuts are `Cmd+Alt+R` to send,
+shown in a scratch response tab. macOS shortcuts are `Cmd+Alt+R` to send,
 `Cmd+Alt+L` to rerun, and `Cmd+Alt+K` to cancel.
 
 Every HTTP or cURL request line also shows `Send` and `Copy cURL` links. Both

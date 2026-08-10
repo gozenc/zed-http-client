@@ -8,11 +8,12 @@ import sublime
 import sublime_plugin
 
 
-OUTPUT_PANEL = "http_client"
+OUTPUT_VIEW_NAME = "HTTP Client Response"
 SETTINGS_FILE = "HTTP Client.sublime-settings"
 ACTIVE_PROCESSES = {}
 LAST_REQUESTS = {}
 PHANTOM_SETS = {}
+RESPONSE_VIEWS = {}
 REQUEST_LINE = re.compile(r"^\s*(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT|TRACE|GRAPHQL)\b|^\s*curl\b", re.I)
 
 
@@ -166,24 +167,26 @@ def collect_result(window, operation, process):
 
 def show_result(window, operation, return_code, output):
     ACTIVE_PROCESSES.pop(window.id(), None)
-    if operation == "copy-curl" and return_code == 0:
-        window.status_message(output.strip() or "HTTP Client: Copied request as cURL.")
-        return
-
-    panel = window.create_output_panel(OUTPUT_PANEL)
-    panel.assign_syntax("Packages/HTTP Client/HTTP Client Response.sublime-syntax")
-    panel.run_command("http_client_replace_output", {"text": output})
-    window.run_command("show_panel", {"panel": "output." + OUTPUT_PANEL})
+    response_view(window).run_command("http_client_replace_output", {"text": output})
     window.status_message(
         "HTTP Client: Request finished." if return_code == 0 else "HTTP Client: Request failed."
     )
 
 
 def show_pending(window):
-    panel = window.create_output_panel(OUTPUT_PANEL)
-    panel.assign_syntax("Packages/HTTP Client/HTTP Client Response.sublime-syntax")
-    panel.run_command("http_client_replace_output", {"text": "HTTP Client: Sending request...\n"})
-    window.run_command("show_panel", {"panel": "output." + OUTPUT_PANEL})
+    response_view(window, fresh=True).run_command("http_client_replace_output", {"text": "HTTP Client: Sending request...\n"})
+
+
+def response_view(window, fresh=False):
+    view = RESPONSE_VIEWS.get(window.id())
+    if fresh or view is None or not view.is_valid():
+        view = window.new_file()
+        view.set_name(OUTPUT_VIEW_NAME)
+        view.set_scratch(True)
+        view.assign_syntax("Packages/HTTP Client/HTTP Client Response.sublime-syntax")
+        RESPONSE_VIEWS[window.id()] = view
+    window.focus_view(view)
+    return view
 
 
 def project_root(window, file_path):

@@ -878,7 +878,7 @@ function printRequest(request, metadata) {
   console.log(`> ${request.method} ${request.url}`);
   console.log(`> file: ${metadata.filePath}:${metadata.block.startLine}`);
   for (const header of request.headers) {
-    console.log(`> ${header.name}: ${header.value}`);
+    console.log(`> ${header.name}: ${redactHeaderValue(header.name, header.value)}`);
   }
   if (request.body) {
     console.log(`> body: ${Buffer.byteLength(request.body)} bytes`);
@@ -925,4 +925,10 @@ function appendHistory(entry) {
   fs.writeFileSync(historyPath, `${existing.slice(-50).join("\n")}\n`);
 }
 
-export { formatDuration, getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue };
+function redactHeaderValue(name, value) {
+  return /(authorization|cookie|api.?key|subscription|token|secret)/i.test(name)
+    ? "<redacted>"
+    : value;
+}
+
+export { formatDuration, getRunExitCode, isExecutedDirectly, parseDotenv, parseDotenvValue, redactHeaderValue };
