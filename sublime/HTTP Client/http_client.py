@@ -162,14 +162,6 @@ def run_request(window, operation, file_path, line, cwd):
         return
     ACTIVE_PROCESSES[window.id()] = process
     window.status_message("HTTP Client: Sending request.")
-
-    sublime.set_timeout(lambda: collect_result(window, operation, process), 10)
-
-
-def collect_result(window, operation, process):
-    if process.poll() is None:
-        sublime.set_timeout(lambda: collect_result(window, operation, process), 100)
-        return
     output, _ = process.communicate()
     show_result(window, operation, process.returncode, output)
 
