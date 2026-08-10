@@ -31,7 +31,7 @@ contexts:
     - match: '^\s*(?:\{|\[)'
       push: Packages/JSON/JSON.sublime-syntax
       with_prototype:
-        - match: '^\s*(?:\}|\])\s*$'
+        - match: '(?=^\s*###)'
           pop: true
     - match: '^\s*(#|//).*$'
       scope: comment.line.http-client

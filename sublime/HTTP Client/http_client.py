@@ -105,7 +105,7 @@ def update_request_actions(view):
             continue
         line = row + 1
         regions.append(region)
-        annotations.append('<a href="send:{0}">Send</a> <a href="copy-curl:{0}">Copy cURL</a>'.format(line))
+        annotations.append('<a href="https://http-client.invalid/send/{0}">Send</a> <a href="https://http-client.invalid/copy-curl/{0}">Copy cURL</a>'.format(line))
     view.add_regions(
         "http_client_actions",
         regions,
@@ -119,7 +119,7 @@ def update_request_actions(view):
 
 
 def navigate_request_action(view, href):
-    operation, line = href.rsplit(":", 1)
+    operation, line = href.rsplit("/", 2)[-2:]
     command = "http_client_send_request_at_line" if operation == "send" else "http_client_copy_request_as_curl_at_line"
     view.window().run_command(command, {"line": int(line)})
 
