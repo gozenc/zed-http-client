@@ -109,8 +109,12 @@ def update_request_actions(view):
     view.add_regions(
         "http_client_actions",
         regions,
-        annotations=annotations,
-        on_navigate=lambda href, current_view=view: navigate_request_action(current_view, href),
+        "",
+        "",
+        sublime.DRAW_NO_FILL,
+        annotations,
+        "",
+        lambda href, current_view=view: navigate_request_action(current_view, href),
     )
 
 
