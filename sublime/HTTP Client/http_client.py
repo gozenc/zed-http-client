@@ -53,6 +53,16 @@ class HttpClientReplaceOutputCommand(sublime_plugin.TextCommand):
         self.view.set_read_only(True)
 
 
+class HttpClientSendRequestAtLineCommand(sublime_plugin.TextCommand):
+    def run(self, edit, line):
+        run_request_from_view(self.view, "send", line)
+
+
+class HttpClientCopyRequestAsCurlAtLineCommand(sublime_plugin.TextCommand):
+    def run(self, edit, line):
+        run_request_from_view(self.view, "copy-curl", line)
+
+
 class HttpClientRequestActions(sublime_plugin.EventListener):
     def on_load_async(self, view):
         schedule_request_actions(view)
@@ -97,23 +107,18 @@ def update_request_actions(view):
         line = row + 1
         phantoms.append(sublime.Phantom(
             sublime.Region(region.end()),
-            '<body id="http-client-actions"><a href="send:{0}">Send</a> <a href="copy-curl:{0}">Copy cURL</a></body>'.format(line),
+            '<body id="http-client-actions"><a href=\'subl:http_client_send_request_at_line {"line": {0}}\'>Send</a> <a href=\'subl:http_client_copy_request_as_curl_at_line {"line": {0}}\'>Copy cURL</a></body>'.format(line),
             sublime.LAYOUT_BELOW,
-            lambda href, current_view=view: run_request_action(current_view, href),
         ))
     phantom_set.update(phantoms)
 
 
-def run_request_action(view, href):
-    operation, line = href.rsplit(":", 1)
+def run_request_from_view(view, operation, line):
     window = view.window()
     file_path = view.file_name()
     cwd = project_root(window, file_path)
     view.run_command("save")
-    sublime.set_timeout(
-        lambda: run_request(window, operation, file_path, int(line), cwd),
-        0,
-    )
+    run_request(window, operation, file_path, int(line), cwd)
 
 
 def run_request(window, operation, file_path, line, cwd):
